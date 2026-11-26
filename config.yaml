@@ -1,0 +1,44 @@
+
+app:
+  name: "Weather Data Intelligence Platform"
+  environment: "development"
+  debug: true
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+
+weather:
+  provider: "open-meteo"
+
+  geocoding_url: "https://geocoding-api.open-meteo.com/v1/search"
+  forecast_url: "https://api.open-meteo.com/v1/forecast"
+
+  forecast_hours: 24
+
+  update_interval_minutes: 60
+
+  cities:
+    - name: "Jaipur"
+      country: "India"
+      latitude: 26.9124
+      longitude: 75.7873
+      timezone: "Asia/Kolkata"
+
+    - name: "Delhi"
+      country: "India"
+      latitude: 28.6139
+      longitude: 77.2090
+      timezone: "Asia/Kolkata"
+
+    - name: "Mumbai"
+      country: "India"
+      latitude: 19.0760
+      longitude: 72.8777
+      timezone: "Asia/Kolkata"
+
+database:
+  retention_days: 90
+
+logging:
+  level: "INFO"
