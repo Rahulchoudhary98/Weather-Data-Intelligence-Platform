@@ -1,23 +1,23 @@
-
 # Weather Data Intelligence Platform
 
-A learning-focused weather data platform built with Python, FastAPI, MySQL, SQLAlchemy, Docker Compose, and Open-Meteo.
+A learning-focused weather data platform built using **Python, FastAPI, MySQL, SQLAlchemy, Docker Compose, and Open-Meteo**.
 
-The platform collects current weather conditions and hourly forecasts for Jaipur, Delhi, and Mumbai, stores the results in MySQL, and exposes them through REST APIs.
+The platform collects current weather conditions and hourly forecasts for Jaipur, Delhi, and Mumbai, stores the data in MySQL, and exposes it through REST APIs.
 
 ## Features
 
-- Current weather collection.
+- Current weather data collection.
 - Hourly weather forecasts for the next 24 hours.
 - Automatic synchronization every 60 minutes.
 - Manual synchronization through a REST API.
 - Persistent MySQL storage.
-- Separate API and scheduler services.
+- Independent API and scheduler services.
 - Configurable monitored cities and collection settings.
 - Duplicate-safe weather record updates.
 - Synchronization history and error tracking.
 - Automatic deletion of weather records older than 90 days.
-- Swagger API documentation.
+- Standardized API response structure.
+- Interactive Swagger API documentation.
 - Automated unit tests.
 
 ## Technology Stack
@@ -25,33 +25,33 @@ The platform collects current weather conditions and hourly forecasts for Jaipur
 | Component | Technology |
 |---|---|
 | Language | Python 3.14 |
-| API | FastAPI |
-| API server | Uvicorn |
+| API Framework | FastAPI |
+| API Server | Uvicorn |
 | Database | MySQL 8.4 |
 | ORM | SQLAlchemy |
-| Database migrations | Alembic |
-| HTTP client | HTTPX |
+| Database Migrations | Alembic |
+| HTTP Client | HTTPX |
 | Configuration | YAML and environment variables |
 | Scheduler | APScheduler |
 | Validation | Pydantic |
 | Testing | Pytest |
 | Containerization | Docker and Docker Compose |
-| Weather provider | Open-Meteo |
+| Weather Provider | Open-Meteo |
 
 ## Architecture
 
-The platform runs three independent services:
+The platform consists of three independent services:
 
-1. **MySQL:** Stores cities, weather records, and synchronization history.
-2. **FastAPI:** Provides endpoints for health checks, cities, weather records, manual synchronization, and sync history.
-3. **Scheduler:** Collects weather data automatically every 60 minutes.
+1. **MySQL:** Stores city information, weather records, and synchronization history.
+2. **FastAPI:** Exposes REST endpoints for health checks, cities, weather records, manual synchronization, and synchronization history.
+3. **Scheduler:** Automatically collects weather data at the configured interval.
 
-### Data flow
+### Data Flow
 
 1. The scheduler requests weather data from Open-Meteo.
-2. The response is validated and transformed.
-3. SQLAlchemy saves or updates the records in MySQL.
-4. Synchronization status is recorded.
+2. The received data is validated and transformed.
+3. SQLAlchemy saves or updates weather records in MySQL.
+4. Synchronization status and processing information are recorded.
 5. Expired weather records are removed according to the retention setting.
 6. API clients retrieve stored information through FastAPI.
 
@@ -65,11 +65,11 @@ The platform runs three independent services:
 
 ## Database Design
 
-### cities
+### 1. cities
 
 Stores city names, countries, geographic coordinates, and timezones.
 
-### weather_records
+### 2. weather_records
 
 Stores current weather and hourly forecast records, including:
 
@@ -86,9 +86,9 @@ Stores current weather and hourly forecast records, including:
 - Valid time
 - Fetch time
 
-The unique constraint on city, record type, and valid time prevents duplicate records for the same forecast timestamp. New synchronization results update existing records where appropriate.
+A unique constraint on city, record type, and valid time prevents duplicate records for the same forecast timestamp. New synchronization results update existing records where appropriate.
 
-### sync_history
+### 3. sync_history
 
 Tracks synchronization start time, completion time, status, processed record count, and errors.
 
@@ -96,6 +96,7 @@ Tracks synchronization start time, completion time, status, processed record cou
 
 ```text
 api-mysql-docker/
+│
 ├── app/
 │   ├── __init__.py
 │   ├── database.py
@@ -105,15 +106,18 @@ api-mysql-docker/
 │   ├── scheduler.py
 │   ├── settings.py
 │   └── weather_service.py
+│
 ├── migrations/
 │   ├── versions/
 │   ├── env.py
 │   └── script.py.mako
+│
 ├── tests/
 │   └── test_weather_service.py
-├── .env
+│
 ├── .env.example
 ├── .gitignore
+├── .dockerignore
 ├── alembic.ini
 ├── compose.yaml
 ├── config.yaml
@@ -121,6 +125,8 @@ api-mysql-docker/
 ├── README.md
 └── requirements.txt
 ```
+
+> The actual `.env` file and virtual environment are kept locally and are not committed to GitHub.
 
 ## Configuration
 
@@ -150,16 +156,19 @@ Never commit `.env` or expose database passwords.
 - Docker Compose
 - Git
 
-### 1. Clone or open the project
+### 1. Clone the repository
 
 ```powershell
-cd D:\Development\Projects\api-mysql-docker
+git clone https://github.com/Rahulchoudhary98/Weather-Data-Intelligence-Platform.git
+
+cd Weather-Data-Intelligence-Platform
 ```
 
 ### 2. Create and activate a virtual environment
 
 ```powershell
 python -m venv .venv
+
 .\.venv\Scripts\Activate.ps1
 ```
 
@@ -173,9 +182,9 @@ pip install -r requirements.txt
 
 Create `.env` using `.env.example` as a template.
 
-Set your own strong database credentials. Do not commit `.env`.
+Set your own database credentials. Do not commit `.env`.
 
-### 5. Start the Docker services
+### 5. Start Docker services
 
 ```powershell
 docker compose up -d --build
@@ -195,11 +204,13 @@ docker compose exec api alembic upgrade head
 
 The initial migration creates the required database tables.
 
-### 8. Open the API documentation
+### 8. Access the API documentation
 
-Visit:
+Once the API is running, visit:
 
-http://localhost:8000/docs
+**Swagger UI:** http://localhost:8000/docs
+
+**OpenAPI JSON:** http://localhost:8000/openapi.json
 
 ## API Endpoints
 
@@ -212,37 +223,78 @@ http://localhost:8000/docs
 | POST | `/api/weather/sync` | Trigger manual synchronization |
 | GET | `/api/sync-history` | Retrieve synchronization history |
 
-### Example requests
+### Example Requests
 
-Get monitored cities:
+**Get application health**
+
+```http
+GET /
+```
+
+**Get monitored cities**
 
 ```http
 GET /api/cities
 ```
 
-Get current weather:
+**Get current weather**
 
 ```http
 GET /api/weather?record_type=current
 ```
 
-Get hourly forecasts for Jaipur:
+**Get hourly forecasts for Jaipur**
 
 ```http
 GET /api/weather/Jaipur?record_type=hourly&limit=24
 ```
 
-Trigger manual synchronization:
+**Trigger manual synchronization**
 
 ```http
 POST /api/weather/sync
 ```
 
-Retrieve synchronization history:
+**Retrieve synchronization history**
 
 ```http
 GET /api/sync-history
 ```
+
+## Standardized API Responses
+
+All API endpoints follow a consistent response structure.
+
+### Successful Response
+
+```json
+{
+  "success": true,
+  "message": "API is healthy.",
+  "data": {
+    "status": "healthy",
+    "application": "Weather Data Intelligence Platform",
+    "environment": "development"
+  },
+  "error": null
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "message": "Request validation failed.",
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": []
+  }
+}
+```
+
+The standardized response format makes API results easier to consume and handle consistently.
 
 ## Automatic Synchronization
 
@@ -250,13 +302,13 @@ The scheduler runs as an independent Docker service.
 
 The default configuration collects weather data every 60 minutes. An initial synchronization is also triggered when the scheduler starts.
 
-Scheduler logs:
+**View scheduler logs:**
 
 ```powershell
 docker compose logs --tail=50 scheduler
 ```
 
-API logs:
+**View API logs:**
 
 ```powershell
 docker compose logs --tail=50 api
@@ -282,37 +334,37 @@ The tests validate weather timestamp parsing, record transformation, missing val
 
 ## Useful Docker Commands
 
-Check running services:
+**Check running services**
 
 ```powershell
 docker compose ps
 ```
 
-View all service logs:
+**View all service logs**
 
 ```powershell
 docker compose logs --tail=100
 ```
 
-Restart services:
+**Restart services**
 
 ```powershell
 docker compose restart
 ```
 
-Stop services without deleting persistent data:
+**Stop services without deleting persistent data**
 
 ```powershell
 docker compose stop
 ```
 
-Start existing services again:
+**Start existing services again**
 
 ```powershell
 docker compose start
 ```
 
-Do not use `docker compose down -v` unless you intentionally want to delete the project's persistent database volume.
+> Do not use `docker compose down -v` unless you intentionally want to delete the project's persistent database volume.
 
 ## Data Provider and Attribution
 
@@ -322,13 +374,21 @@ Please review the provider's terms and attribution requirements before public or
 
 ## Project Scope and Limitations
 
-This is a learning-focused data engineering project.
+This is a learning-focused data engineering project demonstrating:
 
-It demonstrates API development, external data collection, database persistence, scheduled processing, Docker deployment, configuration management, and automated testing.
+- REST API development.
+- External data collection and processing.
+- Relational database design and persistence.
+- Scheduled background processing.
+- Docker-based application deployment.
+- Configuration and environment management.
+- Database migrations.
+- API documentation and response standardization.
+- Automated testing.
 
 It is not intended to be a production-ready weather forecasting service.
 
-Potential future improvements include:
+### Potential Future Improvements
 
 - Pagination and advanced API filtering.
 - API authentication.
